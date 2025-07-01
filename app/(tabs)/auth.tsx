@@ -10,42 +10,48 @@ export default function Auth() {
     const [newPassword, setNewPassword] = useState<string>('');
     const [password, setPassword] = useState<string>('');
     const [confirmedPassword, setConfirmedPassword] = useState<string>('');
-    const [error,setError] = useState<string | null>('');
+    const [error, setError] = useState<string | null>('');
 
-    const {signup,signin} = useAuth();
+    const { signup, signin } = useAuth();
     const theme = useTheme();
-    
+
 
     const handleAuth = async () => {
-        if(!userName || (isSignup && (!email || !newPassword ||  !confirmedPassword) )|| (!isSignup && !password)) {
-            setError('Please fill all fields');
-            return;
-        }
-        if(newPassword.length< 8){
-            setError('Password must be at least 8 characters long');
-            return;
-        }
-        if(newPassword !== confirmedPassword) {
-            setError('Passwords do not match');
-            return;
-        }
-        setError(null); 
+        if (isSignup) {
+            // Sign up validation
+            if (!userName || !email || !newPassword || !confirmedPassword) {
+                setError('Please fill all fields');
+                return;
+            }
+            if (newPassword.length < 8) {
+                setError('Password must be at least 8 characters long');
+                return;
+            }
+            if (newPassword !== confirmedPassword) {
+                setError('Passwords do not match');
+                return;
+            }
 
-        if(isSignup){
+            setError(null);
             const signupError = await signup(userName, email, newPassword);
-            if(signupError) {   
+            if (signupError) {
                 setError(signupError);
             }
-            return
-        }
-        else{
+        } else {
+            // Sign in validation
+            if (!email || !password) {
+                setError('Please fill all fields');
+                return;
+            }
+
+            setError(null);
             const signinError = await signin(email, password);
-            if(signinError) {
+            if (signinError) {
                 setError(signinError);
             }
-            return;
         }
-    }
+    };
+
     const handleSwitchMode = () => {
         setIsSignUp(prevState => !prevState);
     };
@@ -76,10 +82,10 @@ export default function Auth() {
                     label='Email'
                     autoCapitalize="none"
                     keyboardType='email-address'
-                    placeholder='JohnDoe@gmail.com' 
+                    placeholder='JohnDoe@gmail.com'
                     mode="outlined"
                     style={styles.input}
-                    onChangeText={setEmail }
+                    onChangeText={setEmail}
                 />
 
                 <TextInput
