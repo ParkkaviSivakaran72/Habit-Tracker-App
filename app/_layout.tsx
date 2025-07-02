@@ -18,13 +18,13 @@ function RouteGuard({ children }: { children: React.ReactNode }) {
 export default function RootLayout() {
   return (
     <AuthProvider>
-      <PaperProvider>
+      {/* <PaperProvider> */}
         <SafeAreaProvider>
           <Stack>
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           </Stack>
         </SafeAreaProvider>
-      </PaperProvider>
+      {/* </PaperProvider> */}
     </AuthProvider>
   );
 }

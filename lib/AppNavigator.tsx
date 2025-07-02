@@ -78,6 +78,7 @@ export default function AppNavigator() {
     <Tabs.Screen
       name="settings"
       options={{
+        
         tabBarIcon: ({ color }) => (
           <SimpleLineIcons name="settings" size={24} color={color} />
         ),
