@@ -9,3 +9,8 @@ export const databases = new Databases(client);
 
 export const DATABASE_ID = process.env.expo_DB_ID!
 export const HABITS_COLLECTION_ID = process.env.expo_habits_collection_ID!
+
+export interface realTimeResponse {
+    events: string[];
+    payload:any
+}
