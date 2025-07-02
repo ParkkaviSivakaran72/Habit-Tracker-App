@@ -44,7 +44,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signin = async (email: string, password: string) => {
     try {
       await account.createEmailPasswordSession(email, password);
-      await getCurrentUser();
+      const currentUser = await account.get();
+      setUser(currentUser);
       return null;
     } catch (error: any) {
       return error.message ?? "Error occurred";

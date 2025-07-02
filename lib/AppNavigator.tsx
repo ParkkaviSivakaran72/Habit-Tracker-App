@@ -5,11 +5,20 @@ import { Tabs } from "expo-router";
 import Entypo from '@expo/vector-icons/Entypo';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import AntDesign from '@expo/vector-icons/AntDesign';
-import Index from "@/app/(tabs)"; // your main app screens
-import Auth from "@/app/(tabs)/auth";   // your Auth component
+import dailyHabits from "@/app/(tabs)/dailyHabits"; 
+import Auth from "@/app/(tabs)/auth";   
+import addHabits from "@/app/(tabs)/addHabits"; 
+import streaks from "@/app/(tabs)/streaks";
+import settings from "@/app/(tabs)/settings"; 
+import profile from "@/app/(tabs)/profile"; 
+import FontAwesome from '@expo/vector-icons/FontAwesome';
+import Octicons from '@expo/vector-icons/Octicons';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import SimpleLineIcons from '@expo/vector-icons/SimpleLineIcons';
+
 
 export default function AppNavigator() {
-  const { user, loading } = useAuth();
+  const { user, loading, signout } = useAuth();
 
   if (loading) {
     return (
@@ -24,10 +33,72 @@ export default function AppNavigator() {
   }
 
   return (
-    <Tabs screenOptions={{ tabBarActiveTintColor: 'blue', tabBarInactiveTintColor: 'gray' }}>
-        <Tabs.Screen name="auth" options={{ title: 'Auth', tabBarIcon: ({ color, focused }) => { return focused ? (<Entypo name="login" size={24} color={color} />) : (<MaterialCommunityIcons name="login" size={24} color={color} />) } }} />
-        <Tabs.Screen name="index" options={{ title: 'Home', tabBarIcon: ({ color, focused }) => { return focused ? (<Entypo name="home" size={24} color={color} />) : (<AntDesign name="home" size={24} color={color} />) } }} />
-        <Tabs.Screen name="login" options={{ title: 'Login', tabBarIcon: ({ color, focused }) => { return focused ? (<Entypo name="login" size={24} color={color} />) : (<MaterialCommunityIcons name="login" size={24} color={color} />) } }} />
-    </Tabs>
-  );
+  <Tabs
+    screenOptions={{
+      tabBarShowLabel: false,
+      headerStyle: {
+        backgroundColor: '#6A4FB3',
+        shadowColor: 'transparent',
+      },
+      headerTintColor: '#FFFFFF',
+      tabBarStyle: {
+        backgroundColor: '#FFFFFF',
+        borderTopColor: '#E0E0E0',
+      },
+      tabBarActiveTintColor: '#6A4FB3',
+      tabBarInactiveTintColor: '#888888',
+    }}
+  >
+
+    {/* 5 Main Tabs - Spread Full Width */}
+    <Tabs.Screen
+      name="dailyHabits"
+      options={{
+        tabBarIcon: ({ color }) => (
+          <FontAwesome name="calendar-check-o" size={24} color={color} />
+        ),
+      }}
+    />
+    <Tabs.Screen
+      name="streaks"
+      options={{
+        tabBarIcon: ({ color }) => (
+          <Octicons name="graph" size={24} color={color} />
+        ),
+      }}
+    />
+    <Tabs.Screen
+      name="addHabits"
+      options={{
+        tabBarIcon: ({ color }) => (
+          <MaterialIcons name="add-task" size={26} color={color} />
+        ),
+      }}
+    />
+    <Tabs.Screen
+      name="settings"
+      options={{
+        tabBarIcon: ({ color }) => (
+          <SimpleLineIcons name="settings" size={24} color={color} />
+        ),
+      }}
+    />
+    <Tabs.Screen
+      name="profile"
+      options={{
+        tabBarIcon: ({ color }) => (
+          <MaterialCommunityIcons
+            name="face-man-shimmer"
+            size={24}
+            color={color}
+          />
+        ),
+        headerRight: () => null,
+      }}
+    />
+
+   
+  </Tabs>
+);
+
 }

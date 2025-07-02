@@ -1,13 +1,17 @@
 import { Text, View,StyleSheet } from "react-native";
 import {Link} from 'expo-router';
+import { Button } from "react-native-paper";
+import { useAuth } from "@/lib/auth-contxt";
 
-export default function Index() {
+export default function DailyHabits() {
+  const {signout} = useAuth();
   return (
     <View
       style={styles.view}
     >
-      <Text>Hi Welcome our Webpage</Text>
-      <Link href='/login'>Login page</Link>
+      <Text>Daily Habits</Text>
+      
+      
     </View>
   );
 }
