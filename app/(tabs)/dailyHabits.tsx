@@ -2,18 +2,20 @@ import { View, StyleSheet, ScrollView } from "react-native";
 import { Link } from 'expo-router';
 import { Text, Button } from "react-native-paper";
 import { useAuth } from "@/lib/auth-contxt";
-import { client, databases, realTimeResponse } from "@/lib/appwrite";
+import { client, DATABASE_ID, databases, HABITS_COLLECTION_ID, realTimeResponse } from "@/lib/appwrite";
 import { Query } from "react-native-appwrite";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Habit } from "@/types/databases.type";
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { Swipeable } from "react-native-gesture-handler";
 
 export default function DailyHabits() {
   const { user, signout } = useAuth();
   const [habits, setHabits] = useState<Habit[]>([])
+  const SwipeableRefs = useRef<{ [key: string]: Swipeable | null }>({})
 
   useEffect(() => {
-    if(!user) return;
+    if (!user) return;
     if (user) {
 
       const habitSubscription = client.subscribe('databases.6864e0e900014c062975.collections.6864e123001c8af2f761.documents',
@@ -40,8 +42,8 @@ export default function DailyHabits() {
   const fetchHabits = async () => {
     try {
       const response = await databases.listDocuments(
-        "6864e0e900014c062975",
-        "6864e123001c8af2f761",
+        DATABASE_ID,
+        HABITS_COLLECTION_ID,
         [Query.equal("user_id", user?.$id ?? '')]
       )
       console.log(response.documents)
@@ -50,29 +52,69 @@ export default function DailyHabits() {
       console.error(error)
     }
   }
+
+  const handleDeleteHabit = async (id:string) => {
+    try {
+      await databases.deleteDocument(DATABASE_ID,HABITS_COLLECTION_ID,id)
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  const renderRightActions = () => {
+    return (
+      <View style={styles.RightAction}>
+        <MaterialCommunityIcons name="check-circle-outline" size={24} color="black" />
+      </View>
+    )
+  }
+  const renderLeftActions = () => {
+    return (
+      <View style={styles.LeftAction}>
+        <MaterialCommunityIcons name="trash-can-outline" size={24} color="black" />
+      </View>
+    )
+  }
+
   return (
     <View style={styles.view}>
       <Text style={styles.header} variant="headlineSmall">Today Habits</Text>
 
-      <ScrollView >
+      <ScrollView showsVerticalScrollIndicator={false}>
 
         <View style={styles.listContainer}>
           {habits?.length === 0 ? (
             <Text style={styles.emptyText} variant="bodyLarge">No habits found</Text>
           ) : (
             habits.map((habit, key) => (
-              <View key={key} style={styles.habitCard}>
-                <Text style={styles.habitTitle}>{habit.title}</Text>
-                <Text style={styles.habitDescription}>{habit.description}</Text>
-                <View style={styles.streak_frequency}>
-                  <View style={styles.streakLeft}>
-                    <MaterialCommunityIcons name="fire" size={24} color="#FF6F00" />
-                    <Text style={styles.streakText}>{habit.streak_count} day Streak</Text>
+              <Swipeable
+                ref={(ref) => { SwipeableRefs.current[habit.$id] = ref }}
+                key={key}
+                overshootLeft={false}
+                overshootRight={false}
+                renderLeftActions={renderLeftActions}
+                renderRightActions={renderRightActions}
+                onSwipeableOpen = {(direction) => {
+                  if(direction === 'left'){
+                    handleDeleteHabit(habit.$id)
+                  }
+                  SwipeableRefs.current[habit.$id]?.close();
+                }
+              }
+                >
+                <View style={styles.habitCard}>
+                  <Text style={styles.habitTitle}>{habit.title}</Text>
+                  <Text style={styles.habitDescription}>{habit.description}</Text>
+                  <View style={styles.streak_frequency}>
+                    <View style={styles.streakLeft}>
+                      <MaterialCommunityIcons name="fire" size={24} color="#FF6F00" />
+                      <Text style={styles.streakText}>{habit.streak_count} day Streak</Text>
+                    </View>
+                    <Text style={styles.frequency}>{habit.frequency}</Text>
                   </View>
-                  <Text style={styles.frequency}>{habit.frequency}</Text>
-                </View>
 
-              </View>
+                </View>
+              </Swipeable>
             ))
           )}
         </View>
@@ -96,13 +138,34 @@ const styles = StyleSheet.create({
   listContainer: {
     gap: 12,
   },
+  RightAction: {
+    backgroundColor: '#d4edda',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+    height: '100%', // Use 100% to ensure alignment with habitCard
+    borderTopRightRadius: 12,
+    borderBottomRightRadius: 12,
+    borderTopLeftRadius: 6,
+    borderBottomLeftRadius: 6,
+  },
+  LeftAction: {
+    backgroundColor: '#f8d7da',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+    height: '100%',
+    borderTopLeftRadius: 12,
+    borderBottomLeftRadius: 12,
+    borderTopRightRadius: 6,
+    borderBottomRightRadius: 6,
+  },
   habitCard: {
     backgroundColor: '#fff',
     padding: 16,
     borderRadius: 12,
-    marginBottom: 12,
-    elevation: 2, // for Android shadow
-    shadowColor: '#000', // for iOS shadow
+    elevation: 2,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,

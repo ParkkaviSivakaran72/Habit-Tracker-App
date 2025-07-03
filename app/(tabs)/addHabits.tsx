@@ -24,8 +24,8 @@ export default function AddHabits() {
 
         try {
             await databases.createDocument(
-            "6864e0e900014c062975",
-            "6864e123001c8af2f761",
+            DATABASE_ID,
+            HABITS_COLLECTION_ID,
             ID.unique(),
             {
                 user_id:user.$id,
