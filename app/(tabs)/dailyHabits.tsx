@@ -2,23 +2,24 @@ import { View, StyleSheet, ScrollView } from "react-native";
 import { Link } from 'expo-router';
 import { Text, Button } from "react-native-paper";
 import { useAuth } from "@/lib/auth-contxt";
-import { client, DATABASE_ID, databases, HABITS_COLLECTION_ID, realTimeResponse } from "@/lib/appwrite";
-import { Query } from "react-native-appwrite";
+import { client, DATABASE_ID, databases, HABITS_COLLECTION_ID, HABITS_COMPLETIONS_COLLECTION_ID, realTimeResponse } from "@/lib/appwrite";
+import { ID, Query } from "react-native-appwrite";
 import { useEffect, useRef, useState } from "react";
-import { Habit } from "@/types/databases.type";
+import { Habit, HabitCompletion } from "@/types/databases.type";
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Swipeable } from "react-native-gesture-handler";
 
 export default function DailyHabits() {
   const { user, signout } = useAuth();
   const [habits, setHabits] = useState<Habit[]>([])
+  const [completedHabits, setCompletedHabits] = useState<string[]>([])
   const SwipeableRefs = useRef<{ [key: string]: Swipeable | null }>({})
 
   useEffect(() => {
     if (!user) return;
     if (user) {
 
-      const habitSubscription = client.subscribe('databases.6864e0e900014c062975.collections.6864e123001c8af2f761.documents',
+      const habitSubscription = client.subscribe(`databases.${DATABASE_ID}.collections.${HABITS_COLLECTION_ID}.documents`,
         (response: realTimeResponse) => {
           if (response.events.includes('databases.*.collections.*.documents.*.create')) {
             fetchHabits();
@@ -31,10 +32,21 @@ export default function DailyHabits() {
           }
         }
       )
+      const completionSubscription = client.subscribe(`databases.${DATABASE_ID}.collections.${HABITS_COMPLETIONS_COLLECTION_ID}.documents`,
+        (response: realTimeResponse) => {
+          if (response.events.includes('databases.*.collections.*.documents.*.create')) {
+            fetchCompletedHabits();
+          }
+          
+        }
+      )
       fetchHabits();
+      fetchCompletedHabits();
 
       return () => {
-        habitSubscription()
+        habitSubscription();
+        completionSubscription();
+
       }
     }
   }, [user])
@@ -52,6 +64,23 @@ export default function DailyHabits() {
       console.error(error)
     }
   }
+  const fetchCompletedHabits = async () => {
+    try {
+      const today = new Date();
+      today.setHours(0,0,0,0)
+      const response = await databases.listDocuments(
+        DATABASE_ID,
+        HABITS_COMPLETIONS_COLLECTION_ID,
+        [Query.equal("user_id", user?.$id ?? ''),
+        Query.greaterThanEqual("completed_at",today.toISOString())]
+      )
+      console.log(response.documents)
+      const completions = response.documents as HabitCompletion[];
+      setCompletedHabits(completions.map((completion) => completion.habit_id))
+    } catch (error) {
+      console.error(error)
+    }
+  }
 
   const handleDeleteHabit = async (id:string) => {
     try {
@@ -61,10 +90,47 @@ export default function DailyHabits() {
     }
   }
 
-  const renderRightActions = () => {
+  const handleCompleteHabit = async (id:string) => {
+    if(!user || completedHabits?.includes(id)) return;
+    try {
+      const currentDate = new Date().toISOString();
+      await databases.createDocument(
+        DATABASE_ID,
+        HABITS_COMPLETIONS_COLLECTION_ID,
+        ID.unique(),
+        {
+          habit_id : id,
+          user_id: user.$id,
+          completed_at : currentDate
+        }
+      )
+
+      const habit = habits.find((h) => h.$id === id)
+      if(!habit) return;
+
+      await databases.updateDocument(DATABASE_ID,HABITS_COLLECTION_ID,id,{
+        streak_count : habit.streak_count + 1,
+        last_completed: currentDate ,
+      })
+
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  const isHabitCompleted = (id:string) => {
+    return completedHabits?.includes(id);
+  }
+
+  const renderRightActions = (habitId:string) => {
     return (
+      
       <View style={styles.RightAction}>
-        <MaterialCommunityIcons name="check-circle-outline" size={24} color="black" />
+        {
+          isHabitCompleted(habitId) ? (<Text>Completed</Text>):
+          <MaterialCommunityIcons name="check-circle-outline" size={24} color="black" />
+        }
+        
       </View>
     )
   }
@@ -93,16 +159,19 @@ export default function DailyHabits() {
                 overshootLeft={false}
                 overshootRight={false}
                 renderLeftActions={renderLeftActions}
-                renderRightActions={renderRightActions}
+                renderRightActions={() => renderRightActions(habit.$id)}
                 onSwipeableOpen = {(direction) => {
                   if(direction === 'left'){
                     handleDeleteHabit(habit.$id)
+                  }
+                  else if (direction === 'right'){
+                    handleCompleteHabit(habit.$id)
                   }
                   SwipeableRefs.current[habit.$id]?.close();
                 }
               }
                 >
-                <View style={styles.habitCard}>
+                <View style={[styles.habitCard,isHabitCompleted(habit.$id) && styles.completedCard]}>
                   <Text style={styles.habitTitle}>{habit.title}</Text>
                   <Text style={styles.habitDescription}>{habit.description}</Text>
                   <View style={styles.streak_frequency}>
@@ -131,6 +200,10 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: '#F9F9FB',
   },
+  completedCard: {
+    backgroundColor: '#e0e0e0',
+    opacity: 0.6,
+  },
   header: {
     marginBottom: 20,
     fontWeight: 'bold',
@@ -141,7 +214,8 @@ const styles = StyleSheet.create({
   RightAction: {
     backgroundColor: '#d4edda',
     justifyContent: 'center',
-    alignItems: 'center',
+    alignItems: 'flex-end',
+    paddingRight: 16,
     width: '100%',
     height: '100%', // Use 100% to ensure alignment with habitCard
     borderTopRightRadius: 12,
@@ -152,7 +226,8 @@ const styles = StyleSheet.create({
   LeftAction: {
     backgroundColor: '#f8d7da',
     justifyContent: 'center',
-    alignItems: 'center',
+    alignItems: 'flex-start',
+    paddingLeft: 16,
     width: '100%',
     height: '100%',
     borderTopLeftRadius: 12,
