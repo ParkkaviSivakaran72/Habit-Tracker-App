@@ -6,7 +6,7 @@ import Entypo from '@expo/vector-icons/Entypo';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import dailyHabits from "@/app/(tabs)/dailyHabits"; 
-import Auth from "@/app/(tabs)/auth";   
+import Auth from "@/app/auth";   
 import addHabits from "@/app/(tabs)/addHabits"; 
 import streaks from "@/app/(tabs)/streaks";
 import settings from "@/app/(tabs)/settings"; 
