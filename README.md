@@ -1,6 +1,52 @@
-# Welcome to your Expo app 👋
+# 📱 React Native Habit Tracker App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A **full-stack habit tracking application** built with **React Native, Expo, Appwrite, and React Native Paper**.  
+The app allows users to create, complete, and manage habits while tracking streaks and progress, with a clean and intuitive interface.
+
+---
+
+## 🚀 Features
+### 📝 Habit Management
+- ➕ Add new habits with custom names
+- ✅ Complete habits with swipe gestures
+- ❌ Delete habits easily
+- 📅 View and manage today’s habits
+- 📈 Track current streaks and completion history
+
+### 📊 Streaks & Leaderboard
+- 🔥 Calculate current and best streaks for each habit
+- 🏆 Leaderboard for top 3 habits
+- 📊 Rank habits by streak length
+
+### 🎨 UI & Navigation
+- 🧭 Bottom tab navigation with custom icons
+- ✨ Stylish UI using React Native Paper
+- 📜 Scrollable and swipeable screens
+- 🎨 Custom styling for tabs, cards, and completed habits
+
+### ☁️ Backend Integration
+- ⚙️ Appwrite for authentication & database
+- 🔗 Real-time habit completion updates
+- 📂 Collections for habits, completions, and streaks
+- 🛡️ Permission handling for secure access
+
+---
+
+## ⚙️ Tech Stack
+
+### Frontend
+- React Native
+- Expo Router
+- React Native Paper
+- Context API for state management
+
+### Backend
+- Appwrite (Authentication & Database)
+- REST APIs & Real-time subscriptions
+
+---
+
+## 🗂️ Folder Structure
 
 ## Get started
 
