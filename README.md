@@ -46,7 +46,7 @@ The app allows users to create, complete, and manage habits while tracking strea
 
 ---
 
-## 🗂️ Folder Structure
+
 
 ## Get started
 
